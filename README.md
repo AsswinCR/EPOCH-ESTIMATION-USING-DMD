@@ -7,6 +7,10 @@ This repository contains the implementation of a novel approach for Epoch Estima
 
 ## Introduction
 
+<img width="948" alt="image" src="https://github.com/user-attachments/assets/c8e5226f-aa37-4430-b964-439b36affff3" />
+
+
+
 During the production of voiced sounds, the lateral vibration of the vocal folds modulates air from the lungs, generating the carrier signal of speech. The significant excitation that occurs in the vocal tract during this process is known as an **Epoch** or **Glottal Closure Instance (GCI)**. Accurate estimation of epoch locations is crucial for determining the correct pitch of speech signals, which serves as an important metric in various speech applications.
 
 Traditional epoch detection algorithms often show degraded performance due to the varying nature of excitation characteristics in speech signals. A key challenge is the interaction between vocal tract response and the excitation signal, which leads to the influence of various vocal tract frequencies mixed with the excitation signal.
@@ -67,6 +71,10 @@ DMD is a powerful matrix decomposition technique originally developed in fluid d
 7. **Sine Wave Generation**: Construct a sine wave based on the selected mode frequency.
 8. **Epoch Identification**: Detect negative-to-positive zero-crossings in the sine wave as epochs.
 9. **Concatenation**: Repeat the process for all frames and concatenate results.
+
+  <img width="1102" alt="image" src="https://github.com/user-attachments/assets/92397a2c-7bbc-4807-9351-4c251137230f" />
+
+
 
 ## Results
 
