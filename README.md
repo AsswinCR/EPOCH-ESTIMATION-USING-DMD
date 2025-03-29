@@ -1,213 +1,131 @@
+# Epoch Estimation Using Dynamic Mode Decomposition (DMD)
 
-## EPOCH ESTIMATION USING DMD
+## Project Overview
 
-📝 Project Overview
+This repository contains the implementation of a novel approach for Epoch Estimation (also known as Glottal Closure Instant detection) in speech signals using Dynamic Mode Decomposition (DMD). The project was developed for the course "21AIE315: AI in Speech Processing".
 
-This project aims to estimate epoch or Glottal Closure Instant (GCI) locations from speech signals using Dynamic Mode Decomposition (DMD). Unlike conventional linear models, DMD models the speech production system as a non-linear system to capture instantaneous pitch frequencies from the modes of DMD, providing higher accuracy in epoch detection.
 
+## Introduction
 
+During the production of voiced sounds, the lateral vibration of the vocal folds modulates air from the lungs, generating the carrier signal of speech. The significant excitation that occurs in the vocal tract during this process is known as an **Epoch** or **Glottal Closure Instance (GCI)**. Accurate estimation of epoch locations is crucial for determining the correct pitch of speech signals, which serves as an important metric in various speech applications.
 
-🎯 Objective
-	•	Estimate epoch locations with higher accuracy using DMD.
-	•	Identify the mode frequency closest to the fundamental frequency for each glottal cycle.
-	•	Construct a sine wave from the estimated mode and extract negative-to-positive zero-crossings as epoch locations.
-	•	Compare DMD-based epoch estimation with traditional methods such as VMD and ZFF.
+Traditional epoch detection algorithms often show degraded performance due to the varying nature of excitation characteristics in speech signals. A key challenge is the interaction between vocal tract response and the excitation signal, which leads to the influence of various vocal tract frequencies mixed with the excitation signal.
 
-⸻
+## Novelty of Our Approach
 
-Key Features:
-	•	✅ Non-linear Model for Speech Production: DMD captures the non-linear interaction of the excitation signal with vocal tract responses.
-	•	✅ Accurate Epoch Estimation: Detects epoch locations with greater accuracy by choosing the dominant mode.
-	•	✅ Efficient Pipeline: Single-step DMD decomposition is computationally lighter than VMD’s iterative process.
+Most existing epoch extraction methods assume the speech signal comes from a linear model. However, this assumption is not appropriate for speech signals produced by non-linear interactions between excitation signals and vocal tract responses. Our approach using DMD assumes the speech signal comes from a non-linear speech production system, enabling more accurate epoch location estimation.
 
-⸻
+Compared to other non-linear methods like Variable Mode Decomposition (VMD), our DMD-based approach has the advantage of using a single decomposition rather than an iterative method, making it computationally more efficient.
 
-📂 File Structure
+## Dataset
 
-├── DMD_code_5.m                # MATLAB code for DMD-based epoch estimation
-├── README.md                   # Project documentation
-├── Report.docx                  # Detailed project report with results and analysis
-└── SPEECH_DMD_FINAL.pptx       # Final presentation with methodology and results
+We used the CMU Arctic dataset for our experiments, which consists of:
+- 1150 utterances from both male and female speakers in US English
+- Both speech signals and EGG (Electroglottography) signals
+- Recordings in 16-bit, 32kHz sampling frequency
 
+## Methodology
 
+Our approach follows a two-phase framework:
 
-⸻
+### Phase 1: Finding Instantaneous Pitch Frequencies
 
-📖 Usage Instructions
+1. **Preprocessing**: The speech signal is divided into non-overlapping frames (2000 samples each).
+2. **Time-shifting**: The 1D signal vector is converted into a 2D matrix by time-shifting (shift value of 200).
+3. **DMD Application**: Dynamic Mode Decomposition is applied to the time-shifted matrix with a rank value of 6.
+4. **Mode Frequency Analysis**: 
+   - We analyze the speech signal's linear spectrum using Fourier transform to identify sub-signal components.
+   - We compare frequencies obtained through DMD with those from the linear spectrum.
+   - We select the DMD mode frequency nearest to the average pitch of the speech signal.
 
-1️⃣ Clone the Repository
+### Phase 2: Epoch Estimation
 
-git clone https://github.com/AsswinCR/EPOCH-ESTIMATION-USING-DMD.git
-cd EPOCH-ESTIMATION-USING-DMD
+1. **Sine Wave Construction**: Based on the obtained mode frequency, we construct a sine wave that closely resembles the EGG signal.
+2. **Epoch Detection**: We identify negative-to-positive zero-crossings in the constructed sine wave as epoch locations.
+3. **Validation**: We compare our estimated epochs with the ground truth from the EGG signal to evaluate performance.
 
+## Technical Implementation
 
+### Dynamic Mode Decomposition (DMD)
 
-⸻
+DMD is a powerful matrix decomposition technique originally developed in fluid dynamics to analyze complex, nonlinear systems without necessarily knowing the underlying governing equations. The procedure involves:
 
-2️⃣ Run the MATLAB Code
-	•	Open DMD_code_5.m in MATLAB.
-	•	Execute the script to process the speech signal and estimate epoch locations.
-	•	Modify the input parameters (if needed) to experiment with different datasets.
+1. **Data Organization**: Arranging time-evolving data snapshots into matrices X1 and X2, where X2 is X1 advanced by one time step.
+2. **SVD Decomposition**: Applying Singular Value Decomposition (SVD) to X1.
+3. **Low-Rank Approximation**: Computing a low-rank subspace matrix.
+4. **Eigendecomposition**: Extracting eigenvalues and eigenvectors to identify dominant modes.
+5. **Mode Analysis**: Analyzing the eigenvalues to determine frequency characteristics of each mode.
 
-% Run in MATLAB
-DMD_code_5.m
+### Algorithm Flow
 
+1. **Speech Frame Selection**: Extract a frame of 2000 samples from the speech signal.
+2. **Pitch Estimation**: Calculate the average fundamental frequency (F0) of the frame.
+3. **Spectral Analysis**: Identify dominant frequency peaks from the signal's spectrum.
+4. **Window Creation**: Create time-shifted matrices with a specified window length.
+5. **DMD Application**: Apply DMD with rank truncation (r=6) to obtain modes.
+6. **Mode Selection**: Identify the mode with frequency closest to the average pitch.
+7. **Sine Wave Generation**: Construct a sine wave based on the selected mode frequency.
+8. **Epoch Identification**: Detect negative-to-positive zero-crossings in the sine wave as epochs.
+9. **Concatenation**: Repeat the process for all frames and concatenate results.
 
+## Results
 
-⸻
+Our experimental results demonstrate that the DMD approach is highly effective in identifying epoch locations accurately when compared to existing methods. The sine wave constructed from the selected mode frequency closely resembles the differentiated EGG signal (DEGG), with negative-to-positive zero-crossings corresponding to actual epoch locations.
 
-3️⃣ Dataset Description
-	•	Dataset: CMU Arctic Dataset
-	•	Details:
-	•	1150 utterances of male and female speakers.
-	•	US English language.
-	•	Speech signals and EGG signals.
-	•	Recorded at 32KHz sampling frequency with 16-bit resolution.
+Key observations:
+- Low-frequency regions in the constructed sine wave correspond to voiced regions where epoch estimation is performed.
+- High-frequency regions correspond to unvoiced regions.
+- The negative peaks in the DEGG signal closely align with the negative-to-positive zero-crossings in our constructed sine wave.
 
-⸻
+## Code Structure
 
-⚙️ Installation and Requirements
+The implementation consists of the following components:
 
-📚 Required Software
-	•	MATLAB (R2021 or later recommended)
-	•	Toolboxes:
-	•	Signal Processing Toolbox
-	•	Optimization Toolbox
+1. **Main Script**: Handles the overall processing flow, including signal reading, frame division, and result concatenation.
+2. **DMD Functions**: 
+   - `DMD_v2`: Creates the time-shifted matrices
+   - `dmd_rom`: Performs the core DMD decomposition and returns eigenvalues, eigenvectors, and mode frequencies
+3. **Mode Analysis Functions**: 
+   - `get_all_ranks`: Extracts rank information across different window lengths
+   - `get_freq`: Identifies mode frequencies that match spectral peaks
+4. **Signal Generation Functions**:
+   - `find_sine`: Generates sine waves based on mode frequencies
+   - `simulate_signal`: Orchestrates the complete process for a single frame
 
-⸻
+## Conclusion
 
-Step-by-Step Implementation
+Our work demonstrates that applying the DMD algorithm iteratively on speech signals helps capture the required center frequency of the mode, which is found to be near the fundamental frequency of the glottal excitation signal. This characteristic enables accurate estimation of epoch locations.
 
-Step 1: Load and Preprocess the Data
-	•	Load the speech signal and corresponding EGG signal.
-	•	Resample both signals to 16KHz.
+Future work could extend this approach to epoch estimation in emotional speech signals, potentially solving problems of low accuracy predictions from existing methods in highly aroused emotions such as anger and happiness.
 
-[y1, Fs] = audioread(path+"arctic_a0002.wav");
-sp1 = y1(:,1); % Speech signal
-egg1 = y1(:,2); % EGG signal
-sp = resample(sp1, Fs, 16000);
-egg = resample(egg1, Fs, 16000);
+## References
 
+The project draws upon research in speech signal analysis, linear prediction, phase slope analysis, zero-frequency filtering, and various decomposition methods. Key references include work on DMD by Peter Schmid and various epoch detection techniques like YAGA, SEDREAMS, MMF, and GEFBA.
 
+## Usage
 
-⸻
+To run the code:
 
-Step 2: Apply DMD to Extract Modes
-	•	Decompose the speech signal into different modes using DMD.
-	•	Identify the mode frequency closest to the fundamental frequency.
+```matlab
+% Set the path to your speech data
+path = "path_to_your_data/";
 
-% Define parameters
-start_limit = 20000;
-end_limit = 52000;
+% Read the audio file
+[y1, Fs] = audioread(path+"your_speech_file.wav");
 
-% Iterate through speech frames
-for k = start_limit:2000:end_limit-2000
-    range1 = k;
-    range2 = k + 2000;
-    final_mode_freq = simulate_signal(sp, egg, range1, range2, Fs);
-    all_freqs = [all_freqs final_mode_freq];
-end
+% Run the epoch detection
+all_freqs = simulate_signal(y1(:,1), y1(:,2), start_sample, end_sample, Fs);
 
+% Generate sine wave and plot results
+% (See the main script for implementation details)
+```
 
+## Dependencies
 
-⸻
+The code requires MATLAB with the following toolboxes:
+- Signal Processing Toolbox
+- Audio Toolbox
 
-Step 3: Generate Sine Wave from Mode Frequency
-	•	Construct a sine wave based on the estimated mode frequency.
-	•	Combine sine waves from all speech frames to form the simulated excitation signal.
+## License
 
-% Generate sine wave using mode frequency
-fs = 16000;
-dt = 1/fs;
-StopTime = ((62.5 * 2 * length(all_freqs)) / 1000);
-t = (0:dt:StopTime)';
-data_all = [];
-
-for i = 1:length(all_freqs)
-    final_mode_freq = all_freqs(i);
-    data = find_sine(final_mode_freq);
-    data_all = [data_all; data];
-end
-
-data_all = data_all(1:length(data_all)-length(all_freqs)+1);
-
-
-
-⸻
-Step 4: Epoch Estimation
-	•	Identify epoch locations from the zero-crossings of the sine wave.
-	•	Compare epoch locations with the DEGG signal to validate accuracy.
-
-% Plot DEGG and sine wave to visualize epoch locations
-figure;
-egg_part = egg(start_limit:end_limit);
-plot(diff(egg_part));
-hold on;
-plot(t * 100000 / 6.25, data_all);
-
-
-
-⸻
-
-Step 5: Mode Frequency Estimation using DMD
-	•	Apply DMD to speech frames to estimate dominant mode frequencies.
-	•	Identify modes that align closely with the fundamental frequency.
-
-function [final_mode_freq] = simulate_signal(sp, egg, range1, range2, Fs)
-    sp = sp(range1:range2-1);
-    egg = egg(range1:range2-1);
-
-    % Apply DMD and estimate mode frequency
-    [X1, X2] = DMD_v2(sp, 200);
-    [mode_freq] = get_freq(X1, X2, Fs);
-    final_mode_freq = mode_freq;
-end
-
-
-
-⸻
-
-📊 Results and Discussion
-
-✅ Experimental Setup
-	•	Dataset: CMU Arctic Dataset with 1150 utterances of male and female speakers.
-	•	Sampling Frequency: 32KHz (downsampled to 16KHz).
-	•	Validation: Comparison with ground truth EGG signals.
-
-⸻
-
-📈 Observations
-	•	DMD accurately identifies mode frequencies closer to the fundamental frequency.
-	•	Estimated epoch locations closely resemble the DEGG signal’s negative peaks.
-	•	Computational complexity reduced compared to iterative VMD methods.
-
-⸻
-
-🎥 Visualizations
-	•	Epoch locations plotted alongside DEGG signals to validate accuracy.
-	•	Multiple speech frames concatenated to visualize complete speech signals.
-
-⸻
-
-🤝 Contribution Guidelines
-
-Contributions, improvements, and suggestions are welcome!
-To contribute:
-	1.	Fork the repository.
-	2.	Create a new branch (feature/your-feature).
-	3.	Commit your changes.
-	4.	Submit a pull request.
-
-⸻
-
-🧩 License
-This project is licensed under the MIT License.
-
-⸻
-
-🗂️ References
-	•	Karam, Zahi N., et al. “Ecologically valid long-term mood monitoring using speech.” ICASSP 2014.
-	•	Naylor, P.A., et al. “Estimation of glottal closure instants in voiced speech using the DYPSA algorithm.” IEEE 2007.
-	•	Dragomiretskiy, K., Zosso, D. “Variational mode decomposition.” IEEE Transactions 2014.
-
-
+This project is provided for academic and research purposes. Please cite our work if you use it in your research.
